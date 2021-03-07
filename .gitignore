@@ -1,0 +1,7 @@
+.idea/
+*.iml
+*.iws
+log/
+target/
+dependency-reduced-pom.xml
+run/
