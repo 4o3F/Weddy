@@ -13,12 +13,11 @@ public class MessageFilterData {
     public static HashMap<String, Integer> recallInTenMinutes = new HashMap<String, Integer>();
     public static HashMap<String, Integer> muteTime = new HashMap<String, Integer>();
 
-    public static Gson gson = new GsonBuilder().enableComplexMapKeySerialization().setPrettyPrinting().create();
+    private static Gson gson = new GsonBuilder().enableComplexMapKeySerialization().setPrettyPrinting().create();
 
     public static void LoadMessageFilterData() {
         try {
-            messagefilter = gson.fromJson(new String(Files.readAllBytes(Paths.get("./data/messagefilter.json"))), new TypeToken<HashMap<String, HashMap<String, Integer>>>() {
-            }.getType());
+            messagefilter = gson.fromJson(new String(Files.readAllBytes(Paths.get("./data/messagefilter.json"))), new TypeToken<HashMap<String, HashMap<String, Integer>>>() {}.getType());
             recallInTenMinutes = messagefilter.get("recallInTenMinutes");
             muteTime = messagefilter.get("muteTime");
         } catch (Exception e) {

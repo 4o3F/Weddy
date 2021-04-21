@@ -17,6 +17,10 @@ public class DataUtils {
         }
 
         MessageFilterData.LoadMessageFilterData();
+        RuleAcceptData.LoadRuleAcceptData();
+        InviteCodeData.LoadInviteCodeData();
+        SpecialTitleData.LoadSpecialTitleData();
+        UUIDData.LoadUUIDData();
 
         ScheduledExecutorService service = Executors.newScheduledThreadPool(10);
         service.scheduleAtFixedRate(new Runnable() {
@@ -29,5 +33,9 @@ public class DataUtils {
 
     public static void SaveData() {
         MessageFilterData.SaveMessageFilterData();
+        RuleAcceptData.SaveRuleAcceptData();
+        InviteCodeData.SaveInviteCodeData();
+        SpecialTitleData.SaveSpecialTitleData();
+        UUIDData.SaveUUIDData();
     }
 }

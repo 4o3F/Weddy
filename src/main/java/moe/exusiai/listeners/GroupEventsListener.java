@@ -1,65 +1,150 @@
 package moe.exusiai.listeners;
 
 import moe.exusiai.data.MessageFilterData;
+import moe.exusiai.data.UUIDData;
+import moe.exusiai.handler.commandhandler.CommandHandler;
+import moe.exusiai.handler.invitecode.InviteCode;
 import moe.exusiai.handler.messagefilter.MessageFilter;
+import moe.exusiai.handler.specialtitle.SpecialTitle;
 import moe.exusiai.network.NetworkMojang;
+import moe.exusiai.network.NetworkServer;
+import moe.exusiai.utils.ConfigUtil;
 import net.mamoe.mirai.contact.Member;
+import net.mamoe.mirai.contact.MemberPermission;
+import net.mamoe.mirai.contact.NormalMember;
 import net.mamoe.mirai.event.EventHandler;
 import net.mamoe.mirai.event.SimpleListenerHost;
 import net.mamoe.mirai.event.events.GroupMessageEvent;
+import net.mamoe.mirai.event.events.MemberJoinEvent;
 import net.mamoe.mirai.event.events.MemberJoinRequestEvent;
+import net.mamoe.mirai.event.events.MemberLeaveEvent;
+import net.mamoe.mirai.message.data.MessageChain;
+import net.mamoe.mirai.message.data.MessageChainBuilder;
 import net.mamoe.mirai.message.data.MessageSource;
+import net.mamoe.mirai.message.data.PlainText;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 public class GroupEventsListener extends SimpleListenerHost {
-//    public HashMap<Long, Integer> muteInTenMinutes = new HashMap<Long, Integer>();
-//    public HashMap<Long, Integer> muteTime = new HashMap<Long, Integer>();
+
+    HashMap<Long, String> id = new HashMap<>();
+    HashMap<Long, Boolean> bedrock = new HashMap<>();
+    public static List<String> minecraftintergration = Arrays.asList(ConfigUtil.config.get("minecraft").get("group").split(","));
 
     @EventHandler
-    public void onMessage(GroupMessageEvent event) {
+    public void onGroupMessage(GroupMessageEvent event) {
         Member sender = event.getSender();
-        String message = event.getMessage().contentToString();
-        MessageFilter messageFilter = new MessageFilter();
-        Boolean isSensitive = messageFilter.MessageFilter(message);
-        if (isSensitive) {
-            MessageSource.recall(event.getMessage().get(MessageSource.Key));
-            if (MessageFilterData.recallInTenMinutes.get(String.valueOf(sender.getId())) != null) {
-                Integer memberRecallTimes = MessageFilterData.recallInTenMinutes.get(String.valueOf(sender.getId()));
-                if (memberRecallTimes < 3) {
-                    memberRecallTimes++;
-                    MessageFilterData.recallInTenMinutes.put(String.valueOf(sender.getId()), memberRecallTimes);
-                    return;
-                } else {
-                    if (MessageFilterData.muteTime.get(String.valueOf(sender.getId())) == null) {
-                        sender.mute(60);
-                        MessageFilterData.muteTime.put(String.valueOf(sender.getId()), 60);
-                        MessageFilterData.recallInTenMinutes.put(String.valueOf(sender.getId()), 0);
-                        return;
+        //检测违禁词
+        if (ConfigUtil.config.get(String.valueOf(event.getGroup().getId())) != null && Boolean.parseBoolean(ConfigUtil.config.get(String.valueOf(event.getGroup().getId())).get("messagefilter"))) {
+            String message = event.getMessage().contentToString();
+            MessageFilter messageFilter = new MessageFilter();
+            Boolean isSensitive = messageFilter.MessageFilter(message);
+            if (event.getGroup().getBotPermission().equals(MemberPermission.ADMINISTRATOR) || event.getGroup().getBotPermission().equals(MemberPermission.OWNER)) {
+                if (isSensitive) {
+                    MessageSource.recall(event.getMessage().get(MessageSource.Key));
+                    if (MessageFilterData.recallInTenMinutes.get(String.valueOf(sender.getId())) != null) {
+                        Integer memberRecallTimes = MessageFilterData.recallInTenMinutes.get(String.valueOf(sender.getId()));
+                        if (memberRecallTimes < 3) {
+                            memberRecallTimes++;
+                            MessageFilterData.recallInTenMinutes.put(String.valueOf(sender.getId()), memberRecallTimes);
+                            return;
+                        } else {
+                            if (MessageFilterData.muteTime.get(String.valueOf(sender.getId())) == null) {
+                                sender.mute(60);
+                                MessageFilterData.muteTime.put(String.valueOf(sender.getId()), 60);
+                                MessageFilterData.recallInTenMinutes.put(String.valueOf(sender.getId()), 0);
+                                return;
+                            } else {
+                                Integer memberMuteTime = MessageFilterData.muteTime.get(String.valueOf(sender.getId())) + 120;
+                                MessageFilterData.muteTime.put(String.valueOf(sender.getId()), memberMuteTime);
+                                sender.mute(memberMuteTime);
+                                MessageFilterData.recallInTenMinutes.put(String.valueOf(sender.getId()), 0);
+                                return;
+                            }
+                        }
                     } else {
-                        Integer memberMuteTime = MessageFilterData.muteTime.get(String.valueOf(sender.getId())) + 120;
-                        MessageFilterData.muteTime.put(String.valueOf(sender.getId()), memberMuteTime);
-                        sender.mute(memberMuteTime);
-                        MessageFilterData.recallInTenMinutes.put(String.valueOf(sender.getId()), 0);
-                        return;
+                        MessageFilterData.recallInTenMinutes.put(String.valueOf(sender.getId()), 1);
                     }
+                    return;
                 }
             } else {
-                MessageFilterData.recallInTenMinutes.put(String.valueOf(sender.getId()), 1);
+                if (isSensitive) {
+                    MessageChain messageChain = new MessageChainBuilder()
+                            .append(new PlainText("PTRS无权限执行撤回和禁言操作"))
+                            .build();
+                    event.getGroup().sendMessage(messageChain);
+                    return;
+                }
             }
+        }
 
+        //转发消息到服务器
+        //暂时关闭，等待我重写Lode.Api
+//        if (ConfigUtil.config.get(String.valueOf(event.getGroup().getId())) != null && minecraftintergration.contains(String.valueOf(event.getGroup().getId()))) {
+//            String message = event.getMessage().contentToString();
+//            NetworkServer.ServerSyncChat(UUIDData.uuidUsername.get(event.getSender().getNameCard()), message);
+//        }
+
+        //执行文字命令
+        if (ConfigUtil.config.get(String.valueOf(event.getGroup().getId())) != null && Boolean.parseBoolean(ConfigUtil.config.get(String.valueOf(event.getGroup().getId())).get("command"))) {
+            CommandHandler commandHandler = new CommandHandler();
+            commandHandler.CommandHandler(event);
         }
         return;
     }
 
     @EventHandler
     public void onMemberJoinRequest(MemberJoinRequestEvent event) {
-        String username = event.getMessage().split("：")[2];
-        Boolean userExist = NetworkMojang.MojangUserNameExist(username);
-        if (userExist) {
-            event.accept();
-            Long requesterId = event.getFromId();
-            event.getGroup().getMembers().get(requesterId).sendMessage("欢迎入群");
-        } else {
-            event.reject(false, "该玩家不存在");
+        if (ConfigUtil.config.get(String.valueOf(event.getGroup().getId())) != null && minecraftintergration.contains(String.valueOf(event.getGroup().getId()))) {
+            String answer = event.getMessage().split("：")[2];
+            String uuid = NetworkMojang.MojangUserNameExist(answer);
+            if (uuid != null) {
+                id.put(event.getFromId(), answer);
+                bedrock.put(event.getFromId(), false);
+                event.accept();
+                NetworkServer.ServerAddWhitelist(answer, event.getFromId());
+                UUIDData.uuidUsername.put(answer, uuid);
+            } else {
+                HashMap<String, String> inviteCode = InviteCode.CheckInviteCode(answer, event.getFromId());
+                if (Boolean.parseBoolean(inviteCode.get("result"))) {
+                    String username = inviteCode.get("username");
+                    id.put(event.getFromId(), username);
+                    bedrock.put(event.getFromId(), true);
+                    event.accept();
+                    NetworkServer.ServerAddWhitelist(username, event.getFromId());
+                    UUIDData.uuidUsername.put(answer, "bedrock");
+                } else {
+                    event.reject(false, "该玩家不存在");
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onMemberJoin(MemberJoinEvent event) {
+        if (ConfigUtil.config.get(String.valueOf(event.getGroup().getId())) != null && Boolean.parseBoolean(ConfigUtil.config.get(String.valueOf(event.getGroup().getId())).get("giverank"))) {
+            NormalMember member = event.getGroup().get(event.getMember().getId());
+            member.setNameCard(id.get(event.getMember().getId()));
+            if (bedrock.get(event.getMember().getId())) {
+                member.setSpecialTitle(SpecialTitle.GetSpecialTitle(true));
+            } else {
+                member.setSpecialTitle(SpecialTitle.GetSpecialTitle(false));
+            }
+            return;
+        }
+    }
+
+    @EventHandler
+    public void onMemberLeave(MemberLeaveEvent event) {
+        if (ConfigUtil.config.get(String.valueOf(event.getGroup().getId())) != null && minecraftintergration.contains(String.valueOf(event.getGroup().getId()))) {
+            NetworkServer.ServerRemoveWhitelist(event.getMember().getId());
+            MessageChain messageChain = new MessageChainBuilder()
+                    .append(new PlainText(event.getMember().getNameCard() + "离开了我们,已冻结权限"))
+                    .build();
+            event.getGroup().sendMessage(messageChain);
+            return;
         }
     }
 }

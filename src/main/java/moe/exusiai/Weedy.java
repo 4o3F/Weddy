@@ -1,7 +1,9 @@
 package moe.exusiai;
 
 import moe.exusiai.data.DataUtils;
+import moe.exusiai.listeners.FriendEventsListener;
 import moe.exusiai.listeners.GroupEventsListener;
+import moe.exusiai.server.ServerLoader;
 import moe.exusiai.utils.ConfigUtil;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
@@ -10,9 +12,11 @@ import net.mamoe.mirai.utils.BotConfiguration;
 import java.io.File;
 
 public class Weedy {
+    public static Bot bot;
     public static void main(String[] args) {
         DataUtils.LoadData();
         ConfigUtil.LoadConfig();
+        ServerLoader.LoadServer();
         weedy();
     }
     public static void weedy() {
@@ -24,7 +28,7 @@ public class Weedy {
             logdictionary.mkdirs();
         }
 
-        Bot bot = BotFactory.INSTANCE.newBot(qqnumber, qqpassword, new BotConfiguration() {
+        bot = BotFactory.INSTANCE.newBot(qqnumber, qqpassword, new BotConfiguration() {
             {
                 fileBasedDeviceInfo();
                 setProtocol(MiraiProtocol.ANDROID_PHONE);
@@ -33,7 +37,9 @@ public class Weedy {
             }
         });
         bot.login();
+        bot.getEventChannel().registerListenerHost(new FriendEventsListener());
         bot.getEventChannel().registerListenerHost(new GroupEventsListener());
+
         bot.join();
     }
 }

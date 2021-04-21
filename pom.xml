@@ -32,7 +32,7 @@
         <dependency>
             <groupId>net.mamoe</groupId>
             <artifactId>mirai-core-jvm</artifactId>
-            <version>2.4.2</version> <!-- 替换版本为你需要的版本 -->
+            <version>2.6-M2</version> <!-- 替换版本为你需要的版本 -->
         </dependency>
 <!--        <dependency>-->
 <!--            <groupId>io.netty</groupId>-->
@@ -50,6 +50,13 @@
             <artifactId>gson</artifactId>
             <version>2.8.6</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.nanohttpd/nanohttpd -->
+        <dependency>
+            <groupId>org.nanohttpd</groupId>
+            <artifactId>nanohttpd</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
 
         <!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.alibaba/fastjson &ndash;&gt;-->
 <!--        <dependency>-->
@@ -101,8 +108,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>7</source>
-                    <target>7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>
