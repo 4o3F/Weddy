@@ -74,6 +74,7 @@ public class NetworkServer {
             if (code == 403) {
                 System.out.println("error" + response.body().string());
             }
+            response.body().close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -102,6 +103,7 @@ public class NetworkServer {
             if (code == 403) {
                 System.out.println("error" + response.body().string());
             }
+            response.body().close();
         } catch (Exception e) {
             e.printStackTrace();
         }

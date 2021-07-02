@@ -32,7 +32,7 @@
         <dependency>
             <groupId>net.mamoe</groupId>
             <artifactId>mirai-core-jvm</artifactId>
-            <version>2.6-M2</version> <!-- 替换版本为你需要的版本 -->
+            <version>2.6.2</version> <!-- 替换版本为你需要的版本 -->
         </dependency>
 <!--        <dependency>-->
 <!--            <groupId>io.netty</groupId>-->

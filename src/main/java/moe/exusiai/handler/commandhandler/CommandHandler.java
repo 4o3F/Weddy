@@ -17,7 +17,7 @@ public class CommandHandler {
                 if (message.startsWith("创建注册码")) {
                     if (!event.getBot().getGroup(event.getSubject().getId()).get(event.getSender().getId()).getSpecialTitle().startsWith("R")) {
                         MessageChain messageChain = new MessageChainBuilder()
-                                .append(new PlainText("警告!你无权访问权限文件!此行为已被记录,请等待下一步处理"))
+                                .append(new PlainText("你不该把权限记录给普通干员看"))
                                 .build();
                         ((GroupMessageEvent) event).getGroup().sendMessage(messageChain);
                     } else {

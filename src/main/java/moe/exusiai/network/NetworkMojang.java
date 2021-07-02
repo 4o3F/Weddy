@@ -29,8 +29,10 @@ public class NetworkMojang {
             } else if (code == 200) {
                 HashMap<String, String> data = new HashMap<>();
                 data = gson.fromJson(body, new TypeToken<HashMap<String, String>>() {}.getType());
+                response.body().close();
                 return UUIDUtil.noDashStringToUUID(data.get("id"));
             } else {
+                response.body().close();
                 return null;
             }
         } catch (Exception e) {
